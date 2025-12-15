@@ -1,0 +1,8 @@
+__pycache__/
+.env
+.venv
+*.pyc
+.data
+public_key.pem
+data/public_key.pem
+app/__pycache__/
