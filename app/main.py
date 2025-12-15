@@ -6,6 +6,7 @@ from pathlib import Path
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -64,14 +65,23 @@ async def verify_signature(payload: SignaturePayload) -> dict[str, bool]:
     if not PUBLIC_KEY_FILE.exists():
         raise HTTPException(status_code=400, detail="No public key stored on server")
 
+    public_key_pem = PUBLIC_KEY_FILE.read_text()
+    public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
+
     try:
         data_bytes = base64.b64decode(payload.data)
         signature_bytes = base64.b64decode(payload.signature)
     except (ValueError, TypeError) as exc:  # pragma: no cover - defensive
         raise HTTPException(status_code=400, detail="Invalid base64 payload") from exc
 
-    public_key_pem = PUBLIC_KEY_FILE.read_text()
-    public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
+    # WebCrypto returns ECDSA signatures as a raw R||S byte string. Convert to
+    # DER if needed so `cryptography` can verify it consistently.
+    key_size_bytes = public_key.key_size // 8
+    expected_raw_len = key_size_bytes * 2
+    if len(signature_bytes) == expected_raw_len:
+        r = int.from_bytes(signature_bytes[:key_size_bytes], "big")
+        s = int.from_bytes(signature_bytes[key_size_bytes:], "big")
+        signature_bytes = encode_dss_signature(r, s)
 
     try:
         public_key.verify(signature_bytes, data_bytes, ec.ECDSA(hashes.SHA256()))

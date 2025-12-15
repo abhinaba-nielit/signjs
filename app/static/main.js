@@ -87,10 +87,15 @@ async function generateKeyPair() {
   const privateKeyDer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
   const publicKeyDer = await crypto.subtle.exportKey("spki", keyPair.publicKey);
 
-  const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${arrayBufferToBase64(privateKeyDer).match(/.{1,64}/g).join("\n")}\n-----END PRIVATE KEY-----`;
-  const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${arrayBufferToBase64(publicKeyDer).match(/.{1,64}/g).join("\n")}\n-----END PUBLIC KEY-----`;
+  const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${arrayBufferToBase64(privateKeyDer)
+    .match(/.{1,64}/g)
+    .join("\n")}\n-----END PRIVATE KEY-----`;
+  const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${arrayBufferToBase64(publicKeyDer)
+    .match(/.{1,64}/g)
+    .join("\n")}\n-----END PUBLIC KEY-----`;
 
   generatedPublicKey = publicKeyPem;
+  privateKeySavedCheckbox.checked = false;
   const privateBlob = new Blob([privateKeyPem], { type: "application/x-pem-file" });
   privateKeyDownload.href = URL.createObjectURL(privateBlob);
   privateKeyDownload.classList.remove("hidden");
