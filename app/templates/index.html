@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser Digital Signature Demo</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Browser Digital Signature Demo</h1>
+        <p>
+          Generate a key pair in the browser, keep the private key, upload the public key to the server,
+          and sign data without sending the private key back.
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>Server public key status</h2>
+        <div class="status-row">
+          <span id="public-key-status" class="badge badge-warning">Checking...</span>
+          <button id="refresh-status" type="button">Refresh</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>1) Generate keys in your browser</h2>
+        <p>
+          Click generate to create an ECDSA (P-256) key pair. Download and store the private key; it never leaves your browser.
+        </p>
+        <div class="actions">
+          <button id="generate-keys" type="button">Generate key pair</button>
+          <a id="private-key-download" class="hidden" download="private_key.pem">Download private key</a>
+        </div>
+        <div class="actions">
+          <label class="checkbox">
+            <input id="private-key-saved" type="checkbox" /> I downloaded the private key.
+          </label>
+          <button id="upload-public-key" type="button" disabled>Save public key on server</button>
+        </div>
+        <pre id="public-key-preview" class="preview hidden"></pre>
+      </section>
+
+      <section class="card">
+        <h2>2) Create a signature in the browser</h2>
+        <p>Select the data file to sign and the private key file you previously saved.</p>
+        <div class="input-row">
+          <label for="data-file">Data file</label>
+          <input id="data-file" type="file" />
+        </div>
+        <div class="input-row">
+          <label for="private-key-file">Private key (PEM)</label>
+          <input id="private-key-file" type="file" />
+        </div>
+        <button id="create-signature" type="button">Create signature in browser</button>
+        <p id="signature-help" class="muted">The private key is used only locally to generate the signature.</p>
+        <label for="signature-output">Signature (Base64)</label>
+        <textarea id="signature-output" rows="4" readonly></textarea>
+      </section>
+
+      <section class="card">
+        <h2>3) Submit for verification</h2>
+        <p>Send the signed data and signature to the server to verify against the last saved public key.</p>
+        <button id="submit-signature" type="button">Submit signature</button>
+        <p id="verification-result" class="muted"></p>
+      </section>
+    </main>
+
+    <script src="/static/main.js"></script>
+  </body>
+</html>
